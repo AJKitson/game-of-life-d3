@@ -1,0 +1,18 @@
+{
+  "name": "game-of-life",
+  "version": "0.0.0",
+  "authors": [
+    "Andy Kitson <andrew.kitson@gmail.com>"
+  ],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "underscore": "~1.7.0",
+    "d3": "~3.5.5"
+  }
+}
