@@ -1,100 +1,107 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <script src="bower_components/d3/d3.min.js" charset="utf-8"></script>
-        <script src="bower_components/underscore/underscore-min.js" charset="utf-8"></script>
-    </head>
+  <head>
+    <script src="bower_components/d3/d3.min.js" charset="utf-8"></script>
+    <script src="bower_components/underscore/underscore-min.js" charset="utf-8"></script>
+    <script src="CellPopulation.js"></script>
+    <style type="text/css">
+      .cell {
+        fill: #66e;
+      }
+    </style>
+  </head>
+  <body>
     <script type="text/javascript">
-      //Set up D3
-      var width = 1000;
-      var height = 1000;
-
-      d3.select('body')
-        .append('svg')
-        .attr('width', width)
-        .attr('height', height)
-
-      /*
-        Store cell population as a graph, with live cells as the vertices and
-        edges to indicate neighbors.
-
-        Seed is an array of [x, y] tuples
-      */
-      var CellPopulation = function (seed) {
-        var population = {};
-        population._cells = {};
-        population._neighbors = {};
-
-        var cellToString = function (cell) {
-          return cell[0] + '|' + cell[1];
-        };
-        population.getNeighbors = function (cell) {
-          var neighbors = [];
-          for (var y = -1; y <=1; y++) {
-            for (var x = -1; x <=1; x++) {
-              if (!(x === 0 && y === 0)) {
-                neighbors.push([cell[0] + x, cell[1] + y]);
-              }
-            }
-          }
-          return neighbors;
-        };
-
-        // put x,y cells into the population and return population._cells
-        population.addCellsToPopulation = function (cells) {
-          //add cell tuples to population._cells object
-          _.reduce(cells, function (population, cell) {
-            population[cellToString(cell)] = cell;
-            return population;
-          }, population._cells);
-          
-          //update neighbors
-          _.each(cells, function (cell) {
-
-            var cellStr = cellToString(cell);
-            var neighbors = population.getNeighbors(cell);
-            population._neighbors[cellStr] = neighbors;
-          });
-        };
-
-        population.cellInPopulation = function (cell) {
-          return !!population._cells[cellToString(cell)];
-        };
-
-        population.removeCell = function (cell) {
-          var cellStr = cellToString(cell);
-          delete population._cells[cellStr];
-          delete population._neighbors[cellStr];
-        };
-
-        population.liveCells = function () {
-          var cells = [];
-          for (var k in population._cells) {
-            cells.push(population._cells[k]);
-          }
-          return cells;
-        };
-        return population;
-      };
-
-
-
-
-      var seed = []; //TODO -- get a good seed
-      var world = CellPopulation(seed);
-
+    /*TODO
+    - add click
+    - have color be brighter on creation
+    - add fading color on remove
+    - allow panning 
+    - allow zooming 
+    - do pan and zoom automatically
+    - switch to d3 timer // maybe not?? -- not for updating w/new data?
+    - switch to d3 scales
+    */
       var createNewGeneration = function (world) {
+        var livingNeighborCount = function (cell) {
+          return world.getNeighbors(cell)
+            .filter(world.isAlive)
+            .length;
+        };
 
+        var aliveInNextGeneration = function (cell) {
+          var livingNeighbors = livingNeighborCount(cell);
+          return world.isAlive(cell) 
+                 ? livingNeighbors === 2 || livingNeighbors === 3
+                 : livingNeighbors === 3;
+        };
+
+        var newSeed = world.liveCellsAndNeighbors().filter(aliveInNextGeneration);
+        return CellPopulation(newSeed);
       };
-      var updateWorld = function () {
 
+      var scaleCoordUp = function (c) {
+        return settings.cellSize * c + settings.cellSize / 2;
+      }  
+
+      var display = function (cells) {
+        var size = settings.cellSize;
+        var cells = d3.select('svg')
+          .selectAll('circle')
+          .data(cells, function (d) { return d; })
+
+        cells.enter()
+          .append('circle')
+          .attr('class', 'cell')
+          .attr('r', size / 2 + 'px')
+          .attr('cx', function (d) { return scaleCoordUp(d[0]) + 'px'; }) //what was I thinking here?
+          .attr('cy', function (d) { return scaleCoordUp(d[1]) + 'px'; })
+
+        cells.exit().remove();
       };
-      d3.timer(createNewGeneration);
 
+      var wheelOfTime = function (world) {
+        display(world.liveCells());
+        setTimeout(function () {
+        // d3.timer(function () { //d3.timer is sticky...
+          settings.world = createNewGeneration(world);
+          wheelOfTime(settings.world);
+        }, settings.tick); 
+        return false;
+      };
 
+      // var coordsToCell = function (x, y) {
+      //   var scaleDown = function (c) { return Math.floor(x / settings.cellSize); }
+      //   return [scaleDown(x), scaleDown(y)];
+      // }
+    
+      var settings = {
+        cellSize: 10,
+        worldSize: 1000,
+        world: {},
+        tick: 10
+      };
+      //initial setup
+      d3.select('body').append('svg')
+        .attr('width', settings.worldSize + 'px')
+        .attr('height', settings.worldSize + 'px')
+        // .on('click', function (e) {
+        //   var xy = d3.mouse(this);
+        //   var cell = coordsToCell(xy[0], xy[1]);
+        //   settings.world.addCell(cell);
+        // })
+
+      var seed = [[5, 5], [6, 5], [6, 3], [8, 4], [9, 5], [10, 5], [11, 5]];
+      seed = seed.map(function (cell) {  //position at middle (hacky...)
+        return [
+          cell[0] + (settings.worldSize / 2) / settings.cellSize, 
+          cell[1] + (settings.worldSize / 2) / settings.cellSize
+        ]; 
+      });
+
+      var world = CellPopulation(seed) //need access to world in click handler, so have it out here somewhere
+      wheelOfTime(world);
 
     </script>
-    <body>
-
-    </body>
+  </body>
 </html>
