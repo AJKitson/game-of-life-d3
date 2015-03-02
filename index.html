@@ -5,8 +5,8 @@
     <script src="bower_components/underscore/underscore-min.js" charset="utf-8"></script>
     <script src="CellPopulation.js"></script>
     <style type="text/css">
-      .cell {
-        fill: #66e;
+      svg {
+        border: 1px solid #666;
       }
     </style>
   </head>
@@ -14,13 +14,17 @@
     <script type="text/javascript">
     /*TODO
     - add click
-    - have color be brighter on creation
+    - have color be brighter on creation, gray as it ages (e.g. for static formations)
+    - maybe have background color change with the number of cells
     - add fading color on remove
     - allow panning 
     - allow zooming 
     - do pan and zoom automatically
     - switch to d3 timer // maybe not?? -- not for updating w/new data?
     - switch to d3 scales
+    - clean up: global variables, not creating all our helper fns w/each tick, etc.
+    - create buttons to add standard formations
+    - implement CellPopulation as a SICP-style stream of generations
     */
       var createNewGeneration = function (world) {
         var livingNeighborCount = function (cell) {
@@ -49,6 +53,8 @@
         var cells = d3.select('svg')
           .selectAll('circle')
           .data(cells, function (d) { return d; })
+          .style('fill', '#45e')
+          
 
         cells.enter()
           .append('circle')
@@ -57,7 +63,9 @@
           .attr('cx', function (d) { return scaleCoordUp(d[0]) + 'px'; }) //what was I thinking here?
           .attr('cy', function (d) { return scaleCoordUp(d[1]) + 'px'; })
 
-        cells.exit().remove();
+        cells.exit()
+          //.remove();
+          .style('fill', '#ccc') //just leave around, 
       };
 
       var wheelOfTime = function (world) {
@@ -79,7 +87,7 @@
         cellSize: 10,
         worldSize: 1000,
         world: {},
-        tick: 10
+        tick: 50
       };
       //initial setup
       d3.select('body').append('svg')
