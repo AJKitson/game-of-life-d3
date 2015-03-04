@@ -24,6 +24,7 @@
     - switch to d3 scales
     - clean up: global variables, not creating all our helper fns w/each tick, etc.
     - create buttons to add standard formations
+    - make hexagonal
     - implement CellPopulation as a SICP-style stream of generations
     */
       var createNewGeneration = function (world) {
@@ -62,43 +63,45 @@
           .attr('r', size / 2 + 'px')
           .attr('cx', function (d) { return scaleCoordUp(d[0]) + 'px'; }) //what was I thinking here?
           .attr('cy', function (d) { return scaleCoordUp(d[1]) + 'px'; })
+          .style('fill', '#45e')
 
         cells.exit()
-          //.remove();
-          .style('fill', '#ccc') //just leave around, 
+          .remove();
+          // .style('fill', '#ddd') //just leave around, >> rough on performance
       };
 
       var wheelOfTime = function (world) {
+        settings.world = createNewGeneration(world);
         display(world.liveCells());
         setTimeout(function () {
         // d3.timer(function () { //d3.timer is sticky...
-          settings.world = createNewGeneration(world);
           wheelOfTime(settings.world);
         }, settings.tick); 
         return false;
       };
 
-      // var coordsToCell = function (x, y) {
-      //   var scaleDown = function (c) { return Math.floor(x / settings.cellSize); }
-      //   return [scaleDown(x), scaleDown(y)];
-      // }
+      var coordsToCell = function (x, y) {
+        var scaleDown = function (c) { return Math.floor(c / settings.cellSize); }
+        return [scaleDown(x), scaleDown(y)];
+      }
     
       var settings = {
         cellSize: 10,
         worldSize: 1000,
         world: {},
-        tick: 50
+        tick: 60
       };
       //initial setup
       d3.select('body').append('svg')
         .attr('width', settings.worldSize + 'px')
         .attr('height', settings.worldSize + 'px')
-        // .on('click', function (e) {
-        //   var xy = d3.mouse(this);
-        //   var cell = coordsToCell(xy[0], xy[1]);
-        //   settings.world.addCell(cell);
-        // })
+        .on('click', function (e) {
+          var xy = d3.mouse(this);
+          var cell = coordsToCell(xy[0], xy[1]);
+          settings.world.addCell(cell);
+        })
 
+      // var seed = [[2, 2], [2, 3], [3, 2], [3, 3]];
       var seed = [[5, 5], [6, 5], [6, 3], [8, 4], [9, 5], [10, 5], [11, 5]];
       seed = seed.map(function (cell) {  //position at middle (hacky...)
         return [
