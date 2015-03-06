@@ -11,20 +11,24 @@
     </style>
   </head>
   <body>
+    <div class="buttons">
+      <button class="start">Start</button>
+    </div>
+    <div id="world"></div>
     <script type="text/javascript">
     /*TODO
-    - add click
+    - don't run immediately on load
+    - create buttons to add standard formations
     - have color be brighter on creation, gray as it ages (e.g. for static formations)
     - maybe have background color change with the number of cells
-    - add fading color on remove
+    - speed up and slow down the generation speed
+    - do some profiling
+    - switch to d3 scales
     - allow panning 
     - allow zooming 
     - do pan and zoom automatically
-    - switch to d3 timer // maybe not?? -- not for updating w/new data?
-    - switch to d3 scales
     - clean up: global variables, not creating all our helper fns w/each tick, etc.
-    - create buttons to add standard formations
-    - make hexagonal
+    - make hexagonal?
     - implement CellPopulation as a SICP-style stream of generations
     */
       var createNewGeneration = function (world) {
@@ -67,17 +71,14 @@
 
         cells.exit()
           .remove();
-          // .style('fill', '#ddd') //just leave around, >> rough on performance
       };
 
       var wheelOfTime = function (world) {
         settings.world = createNewGeneration(world);
         display(world.liveCells());
         setTimeout(function () {
-        // d3.timer(function () { //d3.timer is sticky...
           wheelOfTime(settings.world);
         }, settings.tick); 
-        return false;
       };
 
       var coordsToCell = function (x, y) {
@@ -88,30 +89,72 @@
       var settings = {
         cellSize: 10,
         worldSize: 1000,
+        startingFormation: 'Acorn',
         world: {},
         tick: 60
       };
-      //initial setup
-      d3.select('body').append('svg')
-        .attr('width', settings.worldSize + 'px')
-        .attr('height', settings.worldSize + 'px')
-        .on('click', function (e) {
-          var xy = d3.mouse(this);
-          var cell = coordsToCell(xy[0], xy[1]);
-          settings.world.addCell(cell);
-        })
 
-      // var seed = [[2, 2], [2, 3], [3, 2], [3, 3]];
-      var seed = [[5, 5], [6, 5], [6, 3], [8, 4], [9, 5], [10, 5], [11, 5]];
-      seed = seed.map(function (cell) {  //position at middle (hacky...)
-        return [
-          cell[0] + (settings.worldSize / 2) / settings.cellSize, 
-          cell[1] + (settings.worldSize / 2) / settings.cellSize
-        ]; 
-      });
+      var formations = {
+        'Acorn' : [[5, 5], [6, 5], [6, 3], [8, 4], [9, 5], [10, 5], [11, 5]],
+        'R-pentomino': [[1, 0], [2, 0], [0, 1], [1, 1], [1, 2]],
+        'Diehard': [[6, 0], 
+                    [0, 1], [1, 1], 
+                    [1, 2], [5, 2], [6, 2], [7, 2]],
+        'Glider Gun': [[24, 0],
+                      [22, 1], [24, 1],
+                      [12, 2], [13, 2], [20, 2], [21, 2], [34, 2], [35, 2],
+                      [11, 3], [15, 3], [20, 3], [21, 3], [34, 3], [35, 3],
+                      [0, 4], [1, 4], [10, 4], [16, 4], [20, 4], [21, 4], 
+                      [0, 5], [1, 5], [10, 5], [14, 5], [16, 5], [17, 5], [22, 5], [24, 5],
+                      [10, 6], [16, 6], [24, 6],
+                      [11, 7], [15, 7],
+                      [12, 8], [13, 8]]
+      }
 
-      var world = CellPopulation(seed) //need access to world in click handler, so have it out here somewhere
-      wheelOfTime(world);
+      var setup = function () {
+        //setup buttons
+        d3.select('.start')
+          .on('click', start)
+
+        d3.select('.buttons')
+          .selectAll('.buttons .formation')
+          .data(Object.keys(formations))
+          .enter()
+          .append('button')
+          .attr('class', 'formation')
+          .text(function (d) { return d; })
+          .on('click', function (d) {
+            settings.startingFormation = d;
+            display(formations[d]);
+          });
+
+        //setup board
+        d3.select('#world').append('svg')
+          .attr('width', settings.worldSize + 'px')
+          .attr('height', settings.worldSize + 'px')
+          .on('click', function (e) {
+            var xy = d3.mouse(this);
+            var cell = coordsToCell(xy[0], xy[1]);
+            settings.world.addCell(cell);
+          })
+      };
+
+      var start = function () {
+        var seed = formations[settings.startingFormation];
+        seed = seed.map(function (cell) {  //position at middle (hacky...)
+          return [
+            cell[0] + (settings.worldSize / 2) / settings.cellSize, 
+            cell[1] + (settings.worldSize / 2) / settings.cellSize
+          ]; 
+        });
+
+        var world = CellPopulation(seed) //need access to world in click handler, so have it out here somewhere
+        wheelOfTime(world);
+        
+      }
+
+      setup();
+
 
     </script>
   </body>
