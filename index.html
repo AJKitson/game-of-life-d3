@@ -124,8 +124,11 @@
           .attr('class', 'formation')
           .text(function (d) { return d; })
           .on('click', function (d) {
-            settings.startingFormation = d;
-            display(formations[d]);
+            settings.world = CellPopulation(formations[d].map(function (cell) {  //position at middle (hacky...)
+              return [ cell[0] + (settings.worldSize / 2) / settings.cellSize, 
+                       cell[1] + (settings.worldSize / 2) / settings.cellSize ]; 
+            }));
+            display(settings.world.liveCells());
           });
 
         //setup board
@@ -140,16 +143,10 @@
       };
 
       var start = function () {
-        var seed = formations[settings.startingFormation];
-        seed = seed.map(function (cell) {  //position at middle (hacky...)
-          return [
-            cell[0] + (settings.worldSize / 2) / settings.cellSize, 
-            cell[1] + (settings.worldSize / 2) / settings.cellSize
-          ]; 
-        });
-
-        var world = CellPopulation(seed) //need access to world in click handler, so have it out here somewhere
-        wheelOfTime(world);
+        // var seed = formations[settings.startingFormation];
+        settings.world = settings.world || CellPopulation(formations[settings.defaultFormation]);
+        // var world = CellPopulation(seed) //need access to world in click handler, so have it out here somewhere
+        wheelOfTime(settings.world);
         
       }
 
