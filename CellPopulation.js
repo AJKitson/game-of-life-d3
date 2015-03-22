@@ -28,18 +28,14 @@ var CellPopulation = function (seed) {
   };
 
   population.getNeighbors = function (cell) {
-    var neighbors = [];
-    var offsets = [-1, 0, 1];
-    var xs = offsets.map(function (offset) { return cell[0] + offset; });
-    var ys = offsets.map(function (offset) { return cell[1] + offset; });
-    xs.forEach(function (x) {
-      ys.forEach(function (y) {
-        if (!(x === cell[0] && y === cell[1])) {
-          neighbors.push([x, y]);
-        }
-      });
+    var offsets = [
+      [-1, -1], [0, -1], [1, -1],
+      [-1,  0],          [1,  0],
+      [-1,  1], [0,  1], [1,  1]
+    ];
+    return offsets.map(function(offset) {
+      return [cell[0] + offset[0], cell[1] + offset[1]];
     });
-    return neighbors;
   };
   
   population.isAlive = function (cell) { return !!alive[cell]; };
