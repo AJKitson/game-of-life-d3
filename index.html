@@ -17,19 +17,15 @@
     <div id="world"></div>
     <script type="text/javascript">
     /*TODO
-    - don't run immediately on load
-    - create buttons to add standard formations
     - have color be brighter on creation, gray as it ages (e.g. for static formations)
     - maybe have background color change with the number of cells
     - speed up and slow down the generation speed
     - do some profiling
     - switch to d3 scales
-    - allow panning 
-    - allow zooming 
-    - do pan and zoom automatically
+    - pan and zoom 
     - clean up: global variables, not creating all our helper fns w/each tick, etc.
     - make hexagonal?
-    - implement CellPopulation as a SICP-style stream of generations
+    - implement CellPopulation as a SICP-style stream of generations, or using ES6 generators
     */
       var createNewGeneration = function (world) {
         var livingNeighborCount = function (cell) {
@@ -138,7 +134,7 @@
           .on('click', function (e) {
             var xy = d3.mouse(this);
             var cell = coordsToCell(xy[0], xy[1]);
-            settings.world.addCell(cell);
+            settings.world.toggleCell(cell);
           })
       };
 
