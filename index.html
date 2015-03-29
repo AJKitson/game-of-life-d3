@@ -17,23 +17,30 @@
     <div id="world"></div>
     <script type="text/javascript">
     /*TODO
-    - have color be brighter on creation, gray as it ages (e.g. for static formations)
-    - maybe have background color change with the number of cells
-    - speed up and slow down the generation speed
-    - do some profiling
-    - switch to d3 scales
-    - pan and zoom 
-    - clean up: global variables, not creating all our helper fns w/each tick, etc.
-    - make hexagonal?
-    - implement CellPopulation as a SICP-style stream of generations, or using ES6 generators
+    [] switch to d3 scales
+    [] have color be brighter on creation, gray as it ages (e.g. for static formations)
+    [] maybe have background color change with the number of cells
+    [] speed up and slow down the generation speed
+    [] do some profiling
+    [] pan and zoom 
+    [] clean up: global variables, not creating all our helper fns w/each tick, etc.
+    [] make hexagonal?
+    [] implement CellPopulation as a SICP-style stream of generations, or using ES6 generators
     */
+
       var createNewGeneration = function (world) {
+        // A cell's fate hinges entirely on how many living
+        // neighbors it has. This function counts them.
         var livingNeighborCount = function (cell) {
           return world.getNeighbors(cell)
             .filter(world.isAlive)
             .length;
         };
 
+        // A living cell continues to live if it has 2 or 3 
+        // living neighbors. It dies otherwise. A dead cell 
+        // comes alive in the next generation if it has exactly
+        // 3 living neighbors. Otherwise it remains dead.
         var aliveInNextGeneration = function (cell) {
           var livingNeighbors = livingNeighborCount(cell);
           return world.isAlive(cell) 
@@ -41,9 +48,13 @@
                  : livingNeighbors === 3;
         };
 
+        // Get all the cells that might be alive next round (the 
+        // living cells and their neighbors) and then filter 
+        // to just those that actually are alove in the next generation.
         var newSeed = world.liveCellsAndNeighbors().filter(aliveInNextGeneration);
         return CellPopulation(newSeed);
       };
+
 
       var scaleCoordUp = function (c) {
         return settings.cellSize * c + settings.cellSize / 2;
@@ -86,7 +97,7 @@
         cellSize: 10,
         worldSize: 1000,
         startingFormation: 'Acorn',
-        world: {},
+        world: CellPopulation([]),
         tick: 60
       };
 
@@ -135,16 +146,14 @@
             var xy = d3.mouse(this);
             var cell = coordsToCell(xy[0], xy[1]);
             settings.world.toggleCell(cell);
-          })
+            display(settings.world.liveCells());
+          });
       };
 
       var start = function () {
-        // var seed = formations[settings.startingFormation];
         settings.world = settings.world || CellPopulation(formations[settings.defaultFormation]);
-        // var world = CellPopulation(seed) //need access to world in click handler, so have it out here somewhere
         wheelOfTime(settings.world);
-        
-      }
+      };
 
       setup();
 
