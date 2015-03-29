@@ -17,12 +17,12 @@
     <div id="world"></div>
     <script type="text/javascript">
     /*TODO
-    [] switch to d3 scales
-    [] have color be brighter on creation, gray as it ages (e.g. for static formations)
-    [] speed up and slow down the generation speed
     [] do some profiling
     [] clean up: global variables, not creating all our helper fns w/each tick, etc.
+    [] make it pretty :)
     [] make hexagonal?
+    [] have color be brighter on creation, gray as it ages (e.g. for static formations)
+    [] speed up and slow down the generation speed
     */
 
       var createNewGeneration = function (world) {
@@ -52,10 +52,6 @@
         return CellPopulation(newSeed);
       };
 
-      var scaleCoordUp = function (c) {
-        return settings.cellSize * c + settings.cellSize / 2;
-      }  
-
       var display = function (cells) {
         var size = settings.cellSize;
         var cells = d3.select('svg')
@@ -68,8 +64,8 @@
           .append('circle')
           .attr('class', 'cell')
           .attr('r', size / 2 + 'px')
-          .attr('cx', function (d) { return scaleCoordUp(d[0]) + 'px'; }) //what was I thinking here?
-          .attr('cy', function (d) { return scaleCoordUp(d[1]) + 'px'; })
+          .attr('cx', function (d) { return scale(d[0]) + 'px'; }) //what was I thinking here?
+          .attr('cy', function (d) { return scale(d[1]) + 'px'; })
           .style('fill', '#45e')
 
         cells.exit()
@@ -98,6 +94,10 @@
         world: CellPopulation([]),
         tick: 60
       };
+
+      var scale = d3.scale.linear()
+        .domain([0, settings.worldSize / settings.cellSize]) 
+        .range([0, settings.worldSize]) 
 
       var formations = {
         'Acorn' : [[5, 5], [6, 5], [6, 3], [8, 4], [9, 5], [10, 5], [11, 5]],
