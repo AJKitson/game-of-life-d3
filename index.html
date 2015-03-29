@@ -17,15 +17,13 @@
     <div id="world"></div>
     <script type="text/javascript">
     /*TODO
+    [] stop if there are no more cells
     [] switch to d3 scales
     [] have color be brighter on creation, gray as it ages (e.g. for static formations)
-    [] maybe have background color change with the number of cells
     [] speed up and slow down the generation speed
     [] do some profiling
-    [] pan and zoom 
     [] clean up: global variables, not creating all our helper fns w/each tick, etc.
     [] make hexagonal?
-    [] implement CellPopulation as a SICP-style stream of generations, or using ES6 generators
     */
 
       var createNewGeneration = function (world) {
@@ -55,7 +53,6 @@
         return CellPopulation(newSeed);
       };
 
-
       var scaleCoordUp = function (c) {
         return settings.cellSize * c + settings.cellSize / 2;
       }  
@@ -81,10 +78,13 @@
       };
 
       var wheelOfTime = function (world) {
-        settings.world = createNewGeneration(world);
-        display(world.liveCells());
+        world = createNewGeneration(world);
+        var cells = world.liveCells();
+          console.log(cells.length)
+        display(cells);
+        if (!cells.length) return
         setTimeout(function () {
-          wheelOfTime(settings.world);
+          wheelOfTime(world);
         }, settings.tick); 
       };
 
@@ -94,8 +94,8 @@
       }
     
       var settings = {
-        cellSize: 10,
-        worldSize: 1000,
+        cellSize: 5,
+        worldSize: 500,
         startingFormation: 'Acorn',
         world: CellPopulation([]),
         tick: 60
