@@ -97,7 +97,7 @@
 
       var scale = d3.scale.linear()
         .domain([0, settings.worldSize / settings.cellSize]) 
-        .range([0, settings.worldSize]) 
+        .range([settings.cellSize / 2, settings.worldSize + settings.cellSize / 2]) 
 
       var formations = {
         'Acorn' : [[5, 5], [6, 5], [6, 3], [8, 4], [9, 5], [10, 5], [11, 5]],
