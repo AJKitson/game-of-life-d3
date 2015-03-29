@@ -17,7 +17,6 @@
     <div id="world"></div>
     <script type="text/javascript">
     /*TODO
-    [] stop if there are no more cells
     [] switch to d3 scales
     [] have color be brighter on creation, gray as it ages (e.g. for static formations)
     [] speed up and slow down the generation speed
@@ -78,9 +77,8 @@
       };
 
       var wheelOfTime = function (world) {
-        world = createNewGeneration(world);
+        settings.world = world = createNewGeneration(world);
         var cells = world.liveCells();
-          console.log(cells.length)
         display(cells);
         if (!cells.length) return
         setTimeout(function () {
