@@ -1,11 +1,13 @@
-<div>
-  <div id="game-of-life"></div>
+<html>
+<head>
+  <title>Game of Life</title>
   <style type="text/css">
     #game-of-life {
-      /*max-width: 500px;*/
+      max-width: 650px;
       border: 1px solid #ccc;
       border-radius: 4px;
       padding: 5px;
+      margin: 0 auto;
     }
     button {
       padding: 6px 12px;
@@ -24,9 +26,15 @@
       float: right;
     }
   </style>
-  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-  <script src="/public/js/game-of-life.js"></script>
-  <script type="text/javascript">
-    game.init(document.getElementById('game-of-life'));
-  </script>
-</div>
+</head>
+<body>
+  <div>
+    <div id="game-of-life"></div>
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script src="game-of-life.js"></script>
+    <script type="text/javascript">
+      game.init(document.getElementById('game-of-life'));
+    </script>
+  </div>
+</body>
+</html>
